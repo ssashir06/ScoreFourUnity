@@ -71,31 +71,29 @@ public class GameMaster : MonoBehaviour
 
     private int? GetWinnerPlayer()
     {
-        for (int directionNumber = 1; directionNumber < 8; directionNumber++)
+        var directions = new[]
         {
-            var xChecks = (directionNumber & 1) == 0;
-            var yChecks = (directionNumber & 2) == 0;
-            var zChecks = (directionNumber & 4) == 0;
-            Func<int, int, int, string> fnKeyGenerator = (x, y, z) => {
-                var sb = new StringBuilder();
-                if (xChecks)
-                {
-                    sb.Append($"{x}");
-                }
-                if (yChecks)
-                {
-                    sb.Append($"{y}");
-                }
-                if (zChecks)
-                {
-                    sb.Append($"{z}");
-                }
-                return sb.ToString();
-            };
+            new [] { 0, 0, 1 },
+            new [] { 0, 1, 0 },
+            new [] { 0, 1, 1 },
+            new [] { 1, 0, 0 },
+            new [] { 1, 0, 1 },
+            new [] { 1, 1, 0 },
+            new [] { 1, 1, 1 },
+            new [] { 0, -1, 1 },
+            new [] { -1, 0, 0 },
+            new [] { -1, 0, 1 },
+            new [] { -1, 1, 0 },
+        };
+        foreach (var direction in directions)
+        {
+            var xChecks = direction[0];
+            var yChecks = direction[1];
+            var zChecks = direction[2];
             var positions =
-                from x in xChecks ? new[] { 0, 1, 2, 3 } : new[] { 0 }
-                from y in yChecks ? new[] { 0, 1, 2, 3 } : new[] { 0 }
-                from z in zChecks ? new[] { 0, 1, 2, 3 } : new[] { 0 }
+                from x in xChecks == 0 ? new[] { 0, 1, 2, 3 } : xChecks == 1 ? new[] { 0 } : new[] { 3 }
+                from y in yChecks == 0 ? new[] { 0, 1, 2, 3 } : yChecks == 1 ? new[] { 0 } : new[] { 3 }
+                from z in zChecks == 0 ? new[] { 0, 1, 2, 3 } : zChecks == 1 ? new[] { 0 } : new[] { 3 }
                 select new { x, y, z }
                 ;
             foreach (var xyz in positions)
@@ -109,9 +107,9 @@ public class GameMaster : MonoBehaviour
                 {
                     var player = matrix[x, y, z];
                     count[player]++;
-                    x += xChecks ? 0 : 1;
-                    y += yChecks ? 0 : 1;
-                    z += zChecks ? 0 : 1;
+                    x += xChecks;
+                    y += yChecks;
+                    z += zChecks;
                 }
                 foreach (var player in new[] { 1, 2 })
                 {
