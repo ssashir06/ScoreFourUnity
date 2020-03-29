@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,6 +18,8 @@ public class MultiplayerGame : MonoBehaviour
     private bool pooling = false;
     private bool ended = false;
     private int counter = 0;
+    private bool updating = false;
+    private bool forceRefresh = false;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +32,9 @@ public class MultiplayerGame : MonoBehaviour
         this.gameRule.AfterMoved += GameRule_AfterMoved;
         this.gameRule.AfterGameOver += GameRule_AfterGameOver;
         this.pooling = this.multiPlayerState.PlayerNumber != 1;
+        this.gameRule.CanDeploy = this.multiPlayerState.PlayerNumber == 1;
+        this.textGuide.text = "Game is started";
+        this.forceRefresh= true;
     }
 
     private void GameRule_AfterGameOver(int winnerPlayerNumber)
@@ -51,54 +57,77 @@ public class MultiplayerGame : MonoBehaviour
         if (playerNumber == this.multiPlayerState.PlayerNumber)
         {
             this.pooling = true;
+            this.gameRule.CanDeploy = false;
         }
         else
         {
             this.pooling = false;
+            this.gameRule.CanDeploy = true;
         }
     }
 
     // Update is called once per frame
-    void Update()
+    async void Update()
     {
+        if (this.runInEditMode)
+        {
+            return;
+        }
         if (this.multiPlayerState == null)
         {
             this.sceneTransfer.GoBackToMenu();
             return;
         }
-        if (this.gameRule.GameOver || this.ended)
+        if (gameRule.GameOver || ended || updating || DateTimeOffset.Now - this.lastApiCalled < TimeSpan.FromSeconds(1))
         {
             return;
         }
-
-
-        if (DateTimeOffset.Now - this.lastApiCalled > TimeSpan.FromSeconds(1))
+        if (this.forceRefresh)
         {
-            if (this.IsGameEnded(out var reason))
-            {
-                this.textGuide.text = $"Game is ended. (reason)";
-                this.ended = true;
-            }
+            this.forceRefresh = false;
+            return;
+        }
+
+        Debug.Log("Update start");
+        this.updating = true;
+        try
+        {
+            await UpdateGame();
+        }
+        finally
+        {
+            this.updating = false;
+        }
+        Debug.Log("Update end");
+        
+    }
+
+    private async Task UpdateGame()
+    {
+
+        if (await this.IsGameEnded())
+        {
+            this.textGuide.text = $"Game is ended.";
+            this.ended = true;
+            return;
         }
 
         if (this.pooling)
         {
             this.textGuide.text = $"Waiting for another player";
-            if (DateTimeOffset.Now - this.lastApiCalled > TimeSpan.FromSeconds(1))
+            var movement = await this.GetEnemyMovement(this.counter);
+            if (movement != null)
             {
-                if (this.TryGetEnemyMovement(this.counter, out var result))
-                {
-                    Debug.Log($"Remote player is deploying: {result.X}-{result.Y}");
+                Debug.Log($"Remote player is deploying: {movement.X}-{movement.Y}");
 
-                    this.pooling = false;
-                    var success = this.deploymentOrganizer.TryDeploy(result.X, result.Y);
-                    if (!success)
-                    {
-                        this.textGuide.text = "Error is occured";
-                        this.ended = true;
-                        this.gameRule.CanDeploy = false;
-                        return;
-                    }
+                this.pooling = false;
+                var success = this.deploymentOrganizer.TryDeploy(movement.X, movement.Y);
+                if (!success)
+                {
+                    this.textGuide.text = "Error is occured";
+                    this.ended = true;
+                    this.gameRule.CanDeploy = false;
+                    return;
                 }
             }
         }
@@ -108,52 +137,54 @@ public class MultiplayerGame : MonoBehaviour
         }
 
         this.gameRule.CanDeploy = !this.gameRule.GameOver && !this.pooling;
-        
+
     }
 
-    private void ReportExit()
+    private async void ReportExit()
     {
-        this.lastApiCalled = DateTimeOffset.Now;
         // TODO
+        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 10));
+        this.lastApiCalled = DateTimeOffset.Now;
     }
 
-    private void ReportMovement(int counter, Movement movement)
+    private async Task ReportMovement(int counter, Movement movement)
     {
-        this.lastApiCalled = DateTimeOffset.Now;
         // TODO
+        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
+        this.lastApiCalled = DateTimeOffset.Now;
     }
 
-    private bool IsGameEnded(out string reason)
+    private async Task<bool> IsGameEnded()
     {
-        this.lastApiCalled = DateTimeOffset.Now;
         // TODO
-        reason = null;
+        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
+        this.lastApiCalled = DateTimeOffset.Now;
         return false;
     }
 
-    private bool TryGetEnemyMovement(int counter, out Movement movement)
+    private async Task<Movement> GetEnemyMovement(int counter)
     {
         this.lastApiCalled = DateTimeOffset.Now;
         // TODO
-        if (UnityEngine.Random.value > 0.8)
+        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
+        if (UnityEngine.Random.value > 0.5)
         {
-            movement = new Movement
+            return new Movement
             {
                 PlayerNumber = this.multiPlayerState.PlayerNumber == 1 ? 2 : 1,
                 X = 1,
                 Y = 1,
             };
-            return true;
         }
         else
         {
-            movement = null;
-            return false;
+            return null;
         }
     }
 
     public class Movement
     {
+        public int Counter { get; set; }
         public int PlayerNumber { get; set; }
         public int X { get; set; }
         public int Y { get; set; }

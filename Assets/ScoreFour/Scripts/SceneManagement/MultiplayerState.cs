@@ -10,5 +10,6 @@ namespace Assets.ScoreFour.Scripts.SceneManagement
     {
         public Guid GameRoomId { get; set; }
         public int PlayerNumber { get; set; }
+        public Guid PlayerId { get; set; }
     }
 }

@@ -24,7 +24,8 @@ public class SceneTransfrer : MonoBehaviour
         GameContext.Instance.Context["MultiPlayerState"] = new MultiplayerState
         {
             GameRoomId = Guid.NewGuid(),
-            PlayerNumber = 2,
+            PlayerId = Guid.NewGuid(),
+            PlayerNumber = 1,
         };
         SceneManager.LoadScene("MultiMain");
         LoadAfterTime();
