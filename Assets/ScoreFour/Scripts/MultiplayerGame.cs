@@ -18,7 +18,7 @@ public class MultiplayerGame : MonoBehaviour
     private bool pooling = false;
     private bool ended = false;
     private int counter = 0;
-    private bool updating = false;
+    private volatile bool updating = false;
     private bool forceRefresh = false;
 
     // Start is called before the first frame update
@@ -124,7 +124,7 @@ public class MultiplayerGame : MonoBehaviour
                 var success = this.deploymentOrganizer.TryDeploy(movement.X, movement.Y);
                 if (!success)
                 {
-                    this.textGuide.text = "Error is occured";
+                    this.textGuide.text = "An error is occured";
                     this.ended = true;
                     this.gameRule.CanDeploy = false;
                     return;

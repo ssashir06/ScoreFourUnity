@@ -19,16 +19,19 @@ public class SceneTransfrer : MonoBehaviour
         
     }
 
-    public void StartMultiPlayerGame()
+    public void StartMultiplayMatching()
     {
-        GameContext.Instance.Context["MultiPlayerState"] = new MultiplayerState
-        {
-            GameRoomId = Guid.NewGuid(),
-            PlayerId = Guid.NewGuid(),
-            PlayerNumber = 1,
-        };
+        SceneManager.LoadScene("MultiLoading");
+    }
+
+    public void StartMultiplayerGame()
+    {
         SceneManager.LoadScene("MultiMain");
-        LoadAfterTime();
+    }
+
+    public void StartOfflineGame()
+    {
+        SceneManager.LoadScene("SingleMain");
     }
 
     public void GoBackToMenu()
@@ -36,9 +39,4 @@ public class SceneTransfrer : MonoBehaviour
         SceneManager.LoadScene("StartMenu");
     }
 
-    private IEnumerator LoadAfterTime()
-    {
-        yield return new WaitForSeconds(2.0f);
-        SceneManager.LoadScene("StartMenu");
-    }
 }
