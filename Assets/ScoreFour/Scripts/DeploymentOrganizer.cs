@@ -7,7 +7,7 @@ public class DeploymentOrganizer : MonoBehaviour
     public GameObject blockerPiecePlayer1;
     public GameObject blockerPiecePlayer2;
     public GameObject blockerPieceCollector;
-    public GameMaster gameMaster;
+    public GameRule gameMaster;
 
     void Start()
     {
@@ -18,21 +18,26 @@ public class DeploymentOrganizer : MonoBehaviour
 
     }
 
-    public void Deploy(int x, int y)
+    public void SetActive(bool actived)
+    {
+        this.gameObject.SetActive(actived);
+    }
+
+    public bool TryDeploy(int x, int y)
     {
         var player = gameMaster.TurnedPlayer;
 
         if (gameMaster.GameOver)
         {
-            return;
+            return false;
         }
 
         if (!gameMaster.TryMove(x, y))
         {
-            return;
+            return false;
         }
 
-        Debug.Log($"Deploy: {x}-{y}");
+        Debug.Log($"Graphical deploy: Player {player} ({x}-{y})");
 
 
         var srcGameObject = player == 1
@@ -42,6 +47,8 @@ public class DeploymentOrganizer : MonoBehaviour
         copyGameObject.transform.SetParent(blockerPieceCollector.transform, false);
         copyGameObject.transform.localPosition = new Vector3(x, 0, y);
         copyGameObject.SetActive(true);
+        
+        return true;
     }
 
     public void RemoveAll()

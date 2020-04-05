@@ -14,7 +14,6 @@ public class PlayerViewRotation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(rotationHorizonal.value);
         var euler = this.transform.rotation.eulerAngles;
         this.transform.rotation = Quaternion.Euler(
             euler.x,
