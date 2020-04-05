@@ -18,6 +18,11 @@ public class DeploymentOrganizer : MonoBehaviour
 
     }
 
+    public void SetActive(bool actived)
+    {
+        this.gameObject.SetActive(actived);
+    }
+
     public bool TryDeploy(int x, int y)
     {
         var player = gameMaster.TurnedPlayer;

@@ -13,6 +13,7 @@ public class AfterMovedTrigger
 {
 }
 
+[ExecuteInEditMode]
 public class GameRule :  ObservableTriggerBase
 {
     public UnityEngine.UI.Text textGuide;
@@ -23,6 +24,7 @@ public class GameRule :  ObservableTriggerBase
     private string guide = "";
     private int[,,] matrix;
     private Subject<Tuple<int, Movement>> onMove;
+    private Subject<int> onGameOver;
 
     public int TurnedPlayer => turnedPlayer;
     public bool GameOver => gameOver;
@@ -37,8 +39,10 @@ public class GameRule :  ObservableTriggerBase
         }
     }
 
-    public event Action<int, Movement> AfterMoved;
-    public event Action<int> AfterGameOver;
+    public IObservable<Tuple<int, Movement>> OnMoveAsObservable
+        => onMove ?? (onMove = new Subject<Tuple<int, Movement>>());
+    public IObservable<int> OnGameOverAsObservable
+        => onGameOver ?? (onGameOver = new Subject<int>());
 
     // Start is called before the first frame update
     void Start()
@@ -104,19 +108,18 @@ public class GameRule :  ObservableTriggerBase
             guide = "Game.";
             gameOver = true;
 
-            this.Raise(turnedPlayer, movement);
-            this.AfterMoved?.Invoke(turnedPlayer, movement);
-            this.AfterGameOver?.Invoke(winner.Value);
+            this.RaiseOnMove(turnedPlayer, movement);
+            this.RaiseOnGameOver(turnedPlayer);
             return true;
         }
 
-        //this.AfterMoved?.Invoke(turnedPlayer, movement);
-        this.Raise(turnedPlayer, movement);
+        this.RaiseOnMove(turnedPlayer, movement);
         guide = "Next, your turn.";
         turnedPlayer = turnedPlayer == 1 ? 2 : 1;
         return true;
     }
-    public void Raise(int playerNumber, Movement movement)
+
+    private void RaiseOnMove(int playerNumber, Movement movement)
     {
         if (onMove != null)
         {
@@ -124,14 +127,18 @@ public class GameRule :  ObservableTriggerBase
         }
     }
 
-    public IObservable<Tuple<int, Movement>> OnMoveAsObservable()
+    private void RaiseOnGameOver(int playerNumber)
     {
-        return onMove ?? (onMove = new Subject<Tuple<int, Movement>>());
+        if (onGameOver != null)
+        {
+            onGameOver.OnNext(playerNumber);
+        }
     }
 
     protected override void RaiseOnCompletedOnDestroy()
     {
         onMove.OnCompleted();
+        onGameOver.OnCompleted();
     }
 
     private int? GetWinnerPlayer()
