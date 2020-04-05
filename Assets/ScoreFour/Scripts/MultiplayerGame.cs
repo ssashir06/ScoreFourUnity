@@ -15,6 +15,8 @@ using UnityEngine.SceneManagement;
 public class MultiplayerGame : MonoBehaviour
 {
     public UnityEngine.UI.Text textGuide;
+    public UnityEngine.UI.Text textPlayer1Name;
+    public UnityEngine.UI.Text textPlayer2Name;
     public GameRoom gameRoom;
     private Guid gameUserId;
     public SceneTransfrer sceneTransfer;
@@ -42,6 +44,9 @@ public class MultiplayerGame : MonoBehaviour
         this.playerNumber = Guid.Parse(this.gameRoom.players[0].gameUserId) == this.gameUserId ? 1
             : Guid.Parse(this.gameRoom.players[1].gameUserId) == this.gameUserId ? 2
             : throw new Exception("Invalid user id");
+
+        this.textPlayer1Name.text = this.gameRoom.players[0].name;
+        this.textPlayer2Name.text = this.gameRoom.players[1].name;
 
         this.gameRule.OnMoveAsObservable
             .RepeatUntilDestroy(this)
