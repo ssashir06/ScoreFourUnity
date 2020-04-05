@@ -248,15 +248,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 198338464}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1334428266}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 250, y: -25}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 250, y: 25}
   m_SizeDelta: {x: 500, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &198338467
@@ -284,13 +284,13 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 2
     m_MaxSize: 40
-    m_Alignment: 0
+    m_Alignment: 6
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Your turn.
+  m_Text: Waiting for response..
 --- !u!222 &198338468
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -434,7 +434,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: unity
+  m_Text: webgl
 --- !u!222 &736867704
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -859,7 +859,7 @@ PrefabInstance:
       objectReference: {fileID: 1324679512}
     - target: {fileID: 1744421504, guid: d79ff4d49fffd90499dd65959902b6a5, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4814253860470726225, guid: d79ff4d49fffd90499dd65959902b6a5,
         type: 3}
@@ -1050,14 +1050,14 @@ MonoBehaviour:
   textPlayer1Name: {fileID: 736867703}
   textPlayer2Name: {fileID: 2042570165}
   gameRoom:
-    gameRoomId: 5376db6a-eebb-4d30-b5a6-3e896f0fe3fe
-    name: Game room Sunday, April 5, 2020 10:09:45 AM
+    gameRoomId: ad3c1981-c7a3-4a48-8b55-d721faf77eea
+    name: Game room Sunday, April 5, 2020 11:04:24 AM
     players:
-    - gameUserId: f135d8ca-7067-4b95-b137-03afc31c0bf2
+    - gameUserId: 0b465353-7539-42e2-b8c4-a7f463d1f5d9
+      name: webgl
+    - gameUserId: f8b23b81-08bd-4470-8d66-ef3897da637c
       name: unity
-    - gameUserId: a17213f7-1a26-4721-9efe-441e419eecb8
-      name: swagger
-    createDate: 2020-04-05T19:09:45.6166892+09:00
+    createDate: 2020-04-05T20:04:24.097536+09:00
   sceneTransfer: {fileID: 2003616369}
   gameRule: {fileID: 1985415148}
   deploymentOrganizer: {fileID: 1324679514}
@@ -1168,7 +1168,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: swagger
+  m_Text: unity
 --- !u!222 &2042570166
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1339,7 +1339,7 @@ PrefabInstance:
     - target: {fileID: 3946614208250808268, guid: 4e243df72b9a33c47aa399438e70adc5,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 70
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 3946614208250808268, guid: 4e243df72b9a33c47aa399438e70adc5,
         type: 3}
@@ -1440,9 +1440,9 @@ RectTransform:
   m_Father: {fileID: 1334428266}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 150, y: 20}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 150, y: -25}
   m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2128299361
