@@ -88,7 +88,6 @@ public class MultiplayerGame : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log("Update");
         if (this.gameRoom == null)
         {
             this.sceneTransfer.GoBackToMenu();
@@ -103,13 +102,11 @@ public class MultiplayerGame : MonoBehaviour
         {
             if (IsMyturn)
             {
-                Debug.Log("Deploy = true");
                 this.deploymentOrganizer.SetActive(true);
                 this.textGuide.text = "Your turn.";
             }
             else
             {
-                Debug.Log("Deploy = false");
                 this.deploymentOrganizer.SetActive(false);
                 this.textGuide.text = "Waiting for response..";
             }
