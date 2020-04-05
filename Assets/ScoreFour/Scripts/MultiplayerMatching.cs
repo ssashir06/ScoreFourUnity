@@ -16,8 +16,7 @@ public class MultiplayerMatching : MonoBehaviour
     public UnityEngine.UI.InputField inputFieldUserName;
     public UnityEngine.UI.Button buttonStart;
     public UnityEngine.UI.Text textMessage;
-    private bool matching = false;
-    private bool started = false;
+    private bool tryMatching = false;
     private string playerNameFixed;
     private Guid gameUserId;
 
@@ -30,32 +29,31 @@ public class MultiplayerMatching : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (started)
+        if (tryMatching)
         {
-            inputFieldUserName.enabled = false;
-            buttonStart.enabled = false;
+            inputFieldUserName.gameObject.SetActive(false);
+            buttonStart.gameObject.SetActive(false);
         }
         else
         {
-            inputFieldUserName.enabled = true;
-            buttonStart.enabled = true;
+            inputFieldUserName.gameObject.SetActive(true);
+            buttonStart.gameObject.SetActive(true);
         }
     }
 
     public async void StartConnection()
     {
-        if (started
-            || string.IsNullOrWhiteSpace(inputFieldUserName.text))
+        if (tryMatching || string.IsNullOrWhiteSpace(inputFieldUserName.text))
         {
             return;
         }
         playerNameFixed = inputFieldUserName.text;
 
         textMessage.text = "Adding user info..";
-        started = true;
+        tryMatching = true;
         await RegisterAsync();
         textMessage.text = "Finding game room ...";
-        while (true)
+        while (tryMatching)
         {
             if (await TryMatchAsync())
             {
@@ -63,13 +61,20 @@ public class MultiplayerMatching : MonoBehaviour
             }
             await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
-        this.sceneTransfrer.StartMultiplayerGame();
+        if (tryMatching)
+        {
+            this.sceneTransfrer.StartMultiplayerGame();
+        }
+        else
+        {
+            this.sceneTransfrer.GoBackToMenu();
+        }
 
     }
 
     public void CancelConnection()
     {
-        started = false;
+        tryMatching = false;
         textMessage.text = "";
     }
 
@@ -80,22 +85,40 @@ public class MultiplayerMatching : MonoBehaviour
             gameUserId = gameUserId.ToString("D"),
             name = playerNameFixed,
         });
-        var request = UnityWebRequest.Put(new Uri(
-            new Uri(Settings.ServerUrl),
-            $"/PlayerMatching/GamePlayer"),
-            json);
-        request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
-        var output = await request.SendWebRequest();
 
-        if (output.isHttpError)
+        Exception lastException = null;
+        for (int i=0;i<Settings.NetworkRetry; i++)
         {
-            textMessage.text = "A http error is occured";
-            return;
-        } else if (output.isNetworkError)
-        {
-            textMessage.text = "A network error is occured";
-            return;
+            try
+            {
+                var request = UnityWebRequest.Put(new Uri(
+                    new Uri(Settings.ServerUrl),
+                    $"/api/v1/PlayerMatching/GamePlayer"),
+                    json);
+                request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                var output = await request.SendWebRequest();
+
+                if (output.isHttpError)
+                {
+                    textMessage.text = "A http error is occured";
+                    throw new Exception("A http error is occured");
+                }
+                else if (output.isNetworkError)
+                {
+                    textMessage.text = "A network error is occured";
+                    throw new Exception("A network error is occured");
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                await UniTask.Delay(TimeSpan.FromSeconds(1));
+            }
         }
+        
+        Debug.Log($"Error is occured: {lastException?.Message ?? "Unknown"}");
+        this.sceneTransfrer.GoBackToMenu();
     }
 
     private async UniTask<bool> TryMatchAsync()
@@ -103,7 +126,7 @@ public class MultiplayerMatching : MonoBehaviour
 
         var output = await UnityWebRequest.Get(new Uri(
             new Uri(Settings.ServerUrl),
-            $"/PlayerMatching/GameRoom?gameUserid={gameUserId}"))
+            $"/api/v1/PlayerMatching/GamePlayer/{gameUserId}"))
             .SendWebRequest();
 
         if (output.isHttpError)

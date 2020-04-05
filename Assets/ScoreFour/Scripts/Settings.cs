@@ -9,5 +9,6 @@ namespace Assets.ScoreFour.Scripts
     public class Settings
     {
         public static string ServerUrl = "https://localhost:44339";
+        public static int NetworkRetry = 5;
     }
 }

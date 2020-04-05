@@ -13,7 +13,6 @@ namespace Assets.ScoreFour.Scripts.JsonEntity
         public int y;
         public int counter;
         public int playerNumber;
-        public string gameRoomId;
         public string createDate;
     }
 }

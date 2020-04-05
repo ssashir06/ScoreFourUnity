@@ -26,7 +26,6 @@ public class MultiplayerGame : MonoBehaviour
     private int counter;
     private int playerNumber;
     private bool ended;
-    private bool updating;
 
     private bool IsMyturn => counter % 2 == this.playerNumber - 1;
     private bool Pooling => !IsMyturn;
@@ -59,7 +58,6 @@ public class MultiplayerGame : MonoBehaviour
                 if (IsMyturn)
                 {
                     movement.playerNumber = this.playerNumber;
-                    movement.gameRoomId = this.gameRoom.gameRoomId;
                     await this.ReportMovementAsync(movement);
                 }
             }
@@ -97,7 +95,7 @@ public class MultiplayerGame : MonoBehaviour
             return;
         }
 
-        if (gameRule.GameOver || ended || updating)
+        if (gameRule.GameOver || ended)
         {
             this.deploymentOrganizer.SetActive(false);
         }
@@ -169,80 +167,127 @@ public class MultiplayerGame : MonoBehaviour
         counter++;
         await UniTask.Yield();
 
-        var json = JsonUtility.ToJson(movement);
-        var request = UnityWebRequest.Put(new Uri(
-            new Uri(Settings.ServerUrl), $"/GameManager/Movement"
-            ), json);
-        request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
-        var output = await request.SendWebRequest();
-        if (output.isHttpError)
+        Exception lastException = null;
+        for (var i = 0; i < Settings.NetworkRetry; i++)
         {
-            Debug.Log("A http error is occured");
-            throw new Exception("A http error is occured");
+            try
+            {
+                var json = JsonUtility.ToJson(movement);
+                var request = UnityWebRequest.Put(new Uri(
+                    new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Movement"
+                    ), json);
+                request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                var output = await request.SendWebRequest();
+                if (output.isHttpError)
+                {
+                    Debug.Log("A http error is occured");
+                    throw new Exception("A http error is occured");
+                }
+                else if (output.isNetworkError)
+                {
+                    Debug.Log("A network error is occured");
+                    throw new Exception("A network error is occured");
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
-        else if (output.isNetworkError)
-        {
-            Debug.Log("A network error is occured");
-            throw new Exception("A network error is occured");
-        }
+        this.enabled = true;
+        this.textGuide.text = $"Error: ({lastException?.Message ?? "Unknown"})";
+        throw lastException;
 
     }
 
     private async Task<bool> IsGameEndedAsync()
     {
-        var output = await UnityWebRequest.Get(new Uri(
-            new Uri(Settings.ServerUrl),
-            $"/GameManager/IsEnded?gameRoomId={this.gameRoom.gameRoomId}"
-            )).SendWebRequest();
+        Exception lastException = null;
+        for (var i = 0; i < Settings.NetworkRetry; i++)
+        {
+            try
+            {
+                var output = await UnityWebRequest.Get(new Uri(
+                    new Uri(Settings.ServerUrl),
+                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/IsEnded"
+                    )).SendWebRequest();
 
-        if (output.isHttpError)
-        {
-            throw new Exception("A http error is occured");
-        }
-        else if (output.isNetworkError)
-        {
-            throw new Exception("A network error is occured");
-        }
-
-        switch (output.responseCode)
-        {
-            default:
-                throw new Exception($"Unexpected responce ({output.responseCode})");
-            case 200:
+                if (output.isHttpError)
                 {
-                    var json = output.downloadHandler.text;
-                    var ended = bool.Parse(json);
-                    return ended;
+                    throw new Exception("A http error is occured");
                 }
+                else if (output.isNetworkError)
+                {
+                    throw new Exception("A network error is occured");
+                }
+
+                switch (output.responseCode)
+                {
+                    default:
+                        throw new Exception($"Unexpected responce ({output.responseCode})");
+                    case 200:
+                        {
+                            var json = output.downloadHandler.text;
+                            var ended = bool.Parse(json);
+                            return ended;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
+        this.enabled = true;
+        this.textGuide.text = $"Error: ({lastException?.Message ?? "Unknown"})";
+        throw lastException;
     }
 
     private async Task<Movement> GetMovementAsync(int counter)
     {
-        var output = await UnityWebRequest.Get(new Uri(
-            new Uri(Settings.ServerUrl),
-            $"/GameManager/Movement?gameRoomId={this.gameRoom.gameRoomId}&counter={counter}"))
-            .SendWebRequest();
-
-        if (output.isNetworkError)
+        Exception lastException = null;
+        for (var i = 0; i < Settings.NetworkRetry; i++)
         {
-            throw new Exception("A network error is occured");
-        }
+            try
+            {
+                var output = await UnityWebRequest.Get(new Uri(
+                    new Uri(Settings.ServerUrl),
+                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/Movement/{counter}"))
+                    .SendWebRequest();
 
-        switch (output.responseCode)
-        {
-            default:
-                throw new Exception($"Unexpected responce ({output.responseCode})");
-            case 404:
-                // No movement yet
-                return null;
-            case 200:
+                if (output.isNetworkError)
                 {
-                    var json = output.downloadHandler.text;
-                    var movement = JsonUtility.FromJson<Movement>(json);
-                    return movement;
+                    throw new Exception("A network error is occured");
                 }
 
+                switch (output.responseCode)
+                {
+                    default:
+                        throw new Exception($"Unexpected responce ({output.responseCode})");
+                    case 404:
+                        // No movement yet
+                        return null;
+                    case 200:
+                        {
+                            var json = output.downloadHandler.text;
+                            var movement = JsonUtility.FromJson<Movement>(json);
+                            return movement;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
+        this.enabled = true;
+        this.textGuide.text = $"Error: ({lastException?.Message ?? "Unknown"})";
+        throw lastException;
     }
 }

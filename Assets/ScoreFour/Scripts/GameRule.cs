@@ -98,7 +98,6 @@ public class GameRule :  ObservableTriggerBase
             y = y,
             counter = counter++,
             createDate = DateTimeOffset.Now.ToString("o"),
-            gameRoomId = Guid.Empty.ToString(),
             playerNumber = 0,
         };
 
@@ -137,8 +136,14 @@ public class GameRule :  ObservableTriggerBase
 
     protected override void RaiseOnCompletedOnDestroy()
     {
-        onMove.OnCompleted();
-        onGameOver.OnCompleted();
+        if (onMove != null)
+        {
+            onMove.OnCompleted();
+        }
+        if (onGameOver != null)
+        {
+            onGameOver.OnCompleted();
+        }
     }
 
     private int? GetWinnerPlayer()
