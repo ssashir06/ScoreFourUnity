@@ -8,7 +8,11 @@ namespace Assets.ScoreFour.Scripts
 {
     public class Settings
     {
+#if DEVELOPMENT_BUILD
         public static string ServerUrl = "https://localhost:44339";
+#else
+        public static string ServerUrl = "https://scorefourserverdev.azurewebsites.net/";
+#endif
         public static int NetworkRetry = 5;
     }
 }
