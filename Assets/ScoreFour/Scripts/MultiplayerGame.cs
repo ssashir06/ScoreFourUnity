@@ -44,8 +44,8 @@ public class MultiplayerGame : MonoBehaviour
             : Guid.Parse(this.gameRoom.players[1].gameUserId) == this.gameUserId ? 2
             : throw new Exception("Invalid user id");
 
-        this.textPlayer1Name.text = this.gameRoom.players[0].name;
-        this.textPlayer2Name.text = this.gameRoom.players[1].name;
+        this.textPlayer1Name.text = this.playerNumber == 1 ? "You" : this.gameRoom.players[0].name;
+        this.textPlayer2Name.text = this.playerNumber == 2 ? "You" : this.gameRoom.players[1].name;
 
         this.gameRule.OnMoveAsObservable
             .RepeatUntilDestroy(this)
