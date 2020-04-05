@@ -24,6 +24,7 @@ public class MultiplayerMatching : MonoBehaviour
     void Start()
     {
         gameUserId = Guid.NewGuid();
+        inputFieldUserName.text = $"Player {(UInt32)(UnityEngine.Random.value * UInt32.MaxValue)}";
     }
 
     // Update is called once per frame
