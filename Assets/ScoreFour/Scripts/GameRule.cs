@@ -1,19 +1,44 @@
-﻿using System;
+﻿using Assets.ScoreFour.Scripts.JsonEntity;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using UnityEngine;
+using UniRx;
+using UniRx.Triggers;
 
-public class GameRule : MonoBehaviour
+public class AfterMovedTrigger
+{
+}
+
+public class GameRule :  ObservableTriggerBase
 {
     public UnityEngine.UI.Text textGuide;
     public GameObject deployment;
     private int turnedPlayer = 1;
     private bool gameOver = false;
+    private int counter = 0;
     private string guide = "";
     private int[,,] matrix;
+    private Subject<Tuple<int, Movement>> onMove;
+
+    public int TurnedPlayer => turnedPlayer;
+    public bool GameOver => gameOver;
+
+    public bool CanDeploy {
+        get
+        {
+            return this.deployment.activeSelf;
+        }
+        set {
+            this.deployment.SetActive(value);
+        }
+    }
+
+    public event Action<int, Movement> AfterMoved;
+    public event Action<int> AfterGameOver;
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +58,7 @@ public class GameRule : MonoBehaviour
     public void Initialize()
     {
         guide = "Please start your game.";
+        counter = 0;
         turnedPlayer = 1;
         gameOver = false;
         matrix = new int[4, 4, 4];
@@ -62,21 +88,50 @@ public class GameRule : MonoBehaviour
         matrix[x - 1, y - 1, height] = turnedPlayer;
 
         var winner = GetWinnerPlayer();
+        var movement = new Movement
+        {
+            x = x,
+            y = y,
+            counter = counter++,
+            createDate = DateTimeOffset.Now.ToString("o"),
+            gameRoomId = Guid.Empty.ToString(),
+            playerNumber = 0,
+        };
+
 
         if (winner != null)
         {
             guide = "Game.";
             gameOver = true;
 
-            this.AfterMoved?.Invoke(turnedPlayer);
+            this.Raise(turnedPlayer, movement);
+            this.AfterMoved?.Invoke(turnedPlayer, movement);
             this.AfterGameOver?.Invoke(winner.Value);
             return true;
         }
 
-        this.AfterMoved?.Invoke(turnedPlayer);
+        //this.AfterMoved?.Invoke(turnedPlayer, movement);
+        this.Raise(turnedPlayer, movement);
         guide = "Next, your turn.";
         turnedPlayer = turnedPlayer == 1 ? 2 : 1;
         return true;
+    }
+    public void Raise(int playerNumber, Movement movement)
+    {
+        if (onMove != null)
+        {
+            onMove.OnNext(Tuple.Create(playerNumber, movement));
+        }
+    }
+
+    public IObservable<Tuple<int, Movement>> OnMoveAsObservable()
+    {
+        return onMove ?? (onMove = new Subject<Tuple<int, Movement>>());
+    }
+
+    protected override void RaiseOnCompletedOnDestroy()
+    {
+        onMove.OnCompleted();
     }
 
     private int? GetWinnerPlayer()
@@ -132,20 +187,4 @@ public class GameRule : MonoBehaviour
         }
         return null;
     }
-
-    public int TurnedPlayer => turnedPlayer;
-    public bool GameOver => gameOver;
-
-    public bool CanDeploy {
-        get
-        {
-            return this.deployment.activeSelf;
-        }
-        set {
-            this.deployment.SetActive(value);
-        }
-    }
-
-    public event Action<int> AfterMoved;
-    public event Action<int> AfterGameOver;
 }

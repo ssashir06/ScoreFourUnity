@@ -1,85 +1,94 @@
-﻿using Assets.ScoreFour.Scripts.SceneManagement;
+﻿using Assets.ScoreFour.Scripts;
+using Assets.ScoreFour.Scripts.JsonEntity;
+using Assets.ScoreFour.Scripts.SceneManagement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UniRx;
+using UniRx.Async;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 public class MultiplayerGame : MonoBehaviour
 {
     public UnityEngine.UI.Text textGuide;
-    public MultiplayerState multiPlayerState;
+    public GameRoom gameRoom;
+    private Guid gameUserId;
     public SceneTransfrer sceneTransfer;
     public GameRule gameRule;
     public DeploymentOrganizer deploymentOrganizer;
 
     private DateTimeOffset lastApiCalled = DateTimeOffset.Now;
-    private bool pooling = false;
-    private bool ended = false;
-    private int counter = 0;
-    private volatile bool updating = false;
-    private bool forceRefresh = false;
+    private int counter;
+    private int playerNumber;
+    private bool ended;
+    private bool updating;
+    private bool forceRefresh;
+    private bool wait = false;
+
+    private bool IsMyturn => counter % 2 == this.playerNumber - 1;
+    private bool Pooling => !IsMyturn;
+    private bool CanDeploy => !wait && IsMyturn;
 
     // Start is called before the first frame update
     void Start()
     {
-        if (this.runInEditMode)
-        {
-            return;
-        }
-        this.multiPlayerState = GameContext.Instance.Context["MultiPlayerState"] as MultiplayerState;
-        this.gameRule.AfterMoved += GameRule_AfterMoved;
+        // if (this.runInEditMode)
+        // {
+        //     return;
+        // }
+
+        //this.gameRule.AfterMoved += GameRule_AfterMoved;
+        this.gameRule.OnMoveAsObservable().Subscribe(async tuple => {
+            var playerNumber = tuple.Item1;
+            var movement = tuple.Item2;
+            if (playerNumber == this.playerNumber)
+            {
+                if (CanDeploy)
+                {
+                    movement.playerNumber = this.playerNumber;
+                    movement.gameRoomId = this.gameRoom.gameRoomId;
+                    await this.ReportMovementAsync(movement);
+                }
+            }
+            else
+            {
+                counter++;
+            }
+        });
         this.gameRule.AfterGameOver += GameRule_AfterGameOver;
-        this.pooling = this.multiPlayerState.PlayerNumber != 1;
-        this.gameRule.CanDeploy = this.multiPlayerState.PlayerNumber == 1;
-        this.textGuide.text = "Game is started";
-        this.forceRefresh= true;
-    }
 
-    private void GameRule_AfterGameOver(int winnerPlayerNumber)
-    {
-        if (winnerPlayerNumber == this.multiPlayerState.PlayerNumber)
-        {
-            this.textGuide.text = "You win.";
-            this.pooling = false;
-        }
-        else
-        {
-            this.textGuide.text = "You lose.";
-            this.pooling = false;
-        }
-    }
+        this.forceRefresh = true;
+        this.textGuide.text = "Game started";
 
-    private void GameRule_AfterMoved(int playerNumber)
-    {
-        counter++;
-        if (playerNumber == this.multiPlayerState.PlayerNumber)
-        {
-            this.pooling = true;
-            this.gameRule.CanDeploy = false;
-        }
-        else
-        {
-            this.pooling = false;
-            this.gameRule.CanDeploy = true;
-        }
+        this.gameRoom = (GameRoom)GameContext.Instance.Context["GameRoom"];
+        this.gameUserId = (Guid)GameContext.Instance.Context["GameUserId"];
+        this.ended = false;
+        this.counter = 0;
+        this.playerNumber = Guid.Parse(this.gameRoom.players[0].gameUserId) == this.gameUserId ? 1
+            : Guid.Parse(this.gameRoom.players[1].gameUserId) == this.gameUserId ? 2
+            : throw new Exception("Invalid user id");
     }
 
     // Update is called once per frame
     async void Update()
     {
-        if (this.runInEditMode)
-        {
-            return;
-        }
-        if (this.multiPlayerState == null)
+        // if (this.runInEditMode)
+        // {
+        //     return;
+        // }
+        if (this.gameRoom == null)
         {
             this.sceneTransfer.GoBackToMenu();
             return;
         }
+
+
         if (gameRule.GameOver || ended || updating || DateTimeOffset.Now - this.lastApiCalled < TimeSpan.FromSeconds(1))
         {
+            this.deploymentOrganizer.enabled = false;
             return;
         }
         if (this.forceRefresh)
@@ -88,40 +97,77 @@ public class MultiplayerGame : MonoBehaviour
             return;
         }
 
-        Debug.Log("Update start");
+        this.deploymentOrganizer.enabled = this.CanDeploy;
+        if (IsMyturn)
+        {
+            this.textGuide.text = "Your turn.";
+        }
+        else
+        {
+            this.textGuide.text = "Waiting for response..";
+        }
+
         this.updating = true;
         try
         {
-            await UpdateGame();
+            await UpdateGameAsync();
         }
         finally
         {
             this.updating = false;
         }
-        Debug.Log("Update end");
         
     }
 
-    private async Task UpdateGame()
+    private void GameRule_AfterGameOver(int winnerPlayerNumber)
+    {
+        if (winnerPlayerNumber == this.playerNumber)
+        {
+            this.textGuide.text = "You win.";
+            this.ended = true;
+        }
+        else
+        {
+            this.textGuide.text = "You lose.";
+            this.ended = true;
+        }
+    }
+
+    private void GameRule_AfterMoved(int playerNumber, Movement movement)
+    {
+        if (playerNumber == this.playerNumber)
+        {
+            if (CanDeploy)
+            {
+                movement.playerNumber = this.playerNumber;
+                movement.gameRoomId = this.gameRoom.gameRoomId;
+                //this.ReportMovement(movement);
+            }
+        }
+        else
+        {
+            counter++;
+        }
+    }
+
+    private async Task UpdateGameAsync()
     {
 
-        if (await this.IsGameEnded())
+        if (await this.IsGameEndedAsync())
         {
             this.textGuide.text = $"Game is ended.";
             this.ended = true;
             return;
         }
 
-        if (this.pooling)
+        if (this.Pooling && !this.ended)
         {
-            this.textGuide.text = $"Waiting for another player";
-            var movement = await this.GetEnemyMovement(this.counter);
+            var movement = await this.GetMovementAsync(this.counter);
             if (movement != null)
             {
-                Debug.Log($"Remote player is deploying: {movement.X}-{movement.Y}");
+                Debug.Log($"Remote player is deploying: {movement.x}-{movement.y}");
 
-                this.pooling = false;
-                var success = this.deploymentOrganizer.TryDeploy(movement.X, movement.Y);
+                var success = this.deploymentOrganizer.TryDeploy(movement.x, movement.y);
                 if (!success)
                 {
                     this.textGuide.text = "An error is occured";
@@ -131,62 +177,91 @@ public class MultiplayerGame : MonoBehaviour
                 }
             }
         }
-        else
+
+        this.gameRule.CanDeploy = !this.gameRule.GameOver && !this.Pooling;
+
+    }
+
+    private async UniTask ReportMovementAsync(Movement movement)
+    {
+        var json = JsonUtility.ToJson(movement);
+        var request = UnityWebRequest.Put(new Uri(
+            new Uri(Settings.ServerUrl), $"/GameManager/Movement"
+            ), json);
+        request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        var output = await request.SendWebRequest();
+        this.lastApiCalled = DateTimeOffset.Now;
+        if (output.isHttpError)
         {
-            this.textGuide.text = $"Your turn";
+            Debug.Log("A http error is occured");
+            throw new Exception("A http error is occured");
+        }
+        else if (output.isNetworkError)
+        {
+            Debug.Log("A network error is occured");
+            throw new Exception("A network error is occured");
+        }
+        counter++;
+
+    }
+
+    private async Task<bool> IsGameEndedAsync()
+    {
+        var output = await UnityWebRequest.Get(new Uri(
+            new Uri(Settings.ServerUrl),
+            $"/GameManager/IsEnded?gameRoomId={this.gameRoom.gameRoomId}"
+            )).SendWebRequest();
+        this.lastApiCalled = DateTimeOffset.Now;
+
+        if (output.isHttpError)
+        {
+            throw new Exception("A http error is occured");
+        }
+        else if (output.isNetworkError)
+        {
+            throw new Exception("A network error is occured");
         }
 
-        this.gameRule.CanDeploy = !this.gameRule.GameOver && !this.pooling;
-
-    }
-
-    private async void ReportExit()
-    {
-        // TODO
-        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 10));
-        this.lastApiCalled = DateTimeOffset.Now;
-    }
-
-    private async Task ReportMovement(int counter, Movement movement)
-    {
-        // TODO
-        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
-        this.lastApiCalled = DateTimeOffset.Now;
-    }
-
-    private async Task<bool> IsGameEnded()
-    {
-        // TODO
-        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
-        this.lastApiCalled = DateTimeOffset.Now;
-        return false;
-    }
-
-    private async Task<Movement> GetEnemyMovement(int counter)
-    {
-        this.lastApiCalled = DateTimeOffset.Now;
-        // TODO
-        await Task.Delay(TimeSpan.FromSeconds(UnityEngine.Random.value * 1));
-        if (UnityEngine.Random.value > 0.5)
+        switch (output.responseCode)
         {
-            return new Movement
-            {
-                PlayerNumber = this.multiPlayerState.PlayerNumber == 1 ? 2 : 1,
-                X = 1,
-                Y = 1,
-            };
-        }
-        else
-        {
-            return null;
+            default:
+                throw new Exception($"Unexpected responce ({output.responseCode})");
+            case 200:
+                {
+                    var json = output.downloadHandler.text;
+                    var ended = bool.Parse(json);
+                    return ended;
+                }
         }
     }
 
-    public class Movement
+    private async Task<Movement> GetMovementAsync(int counter)
     {
-        public int Counter { get; set; }
-        public int PlayerNumber { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        var output = await UnityWebRequest.Get(new Uri(
+            new Uri(Settings.ServerUrl),
+            $"/GameManager/Movement?gameRoomId={this.gameRoom.gameRoomId}&counter={counter}"))
+            .SendWebRequest();
+        this.lastApiCalled = DateTimeOffset.Now;
+
+        if (output.isNetworkError)
+        {
+            throw new Exception("A network error is occured");
+        }
+
+        switch (output.responseCode)
+        {
+            default:
+                throw new Exception($"Unexpected responce ({output.responseCode})");
+            case 404:
+                // No movement yet
+                return null;
+            case 200:
+                {
+                    var json = output.downloadHandler.text;
+                    var movement = JsonUtility.FromJson<Movement>(json);
+                    return movement;
+                }
+
+        }
     }
 }
