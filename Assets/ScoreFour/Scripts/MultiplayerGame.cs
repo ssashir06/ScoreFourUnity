@@ -37,7 +37,7 @@ public class MultiplayerGame : MonoBehaviour
         this.textGuide.text = "Game started";
 
         this.gameRoom = (GameRoom)GameContext.Instance.Context["GameRoom"];
-        this.gameUserId = (Guid)GameContext.Instance.Context["GameUserId"];
+        this.gameUserId = Guid.Parse((string)GameContext.Instance.Context["GameUserId"]);
         this.ended = false;
         this.counter = 0;
         this.playerNumber = Guid.Parse(this.gameRoom.players[0].gameUserId) == this.gameUserId ? 1

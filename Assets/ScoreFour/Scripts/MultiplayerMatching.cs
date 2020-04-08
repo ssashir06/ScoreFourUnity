@@ -18,13 +18,13 @@ public class MultiplayerMatching : MonoBehaviour
     public UnityEngine.UI.Text textMessage;
     private bool tryMatching = false;
     private string playerNameFixed;
-    private Guid gameUserId;
+    private string gameUserId;
 
     // Start is called before the first frame update
     void Start()
     {
-        gameUserId = Guid.NewGuid();
-        inputFieldUserName.text = $"Player {(UInt32)(UnityEngine.Random.value * UInt32.MaxValue)}";
+        gameUserId = (string)GameContext.Instance.Context["GameUserId"];
+        inputFieldUserName.text = (string)GameContext.Instance.Context["PlayerName"];
     }
 
     // Update is called once per frame
@@ -48,7 +48,11 @@ public class MultiplayerMatching : MonoBehaviour
         {
             return;
         }
+
         playerNameFixed = inputFieldUserName.text;
+        GameContext.Instance.Context["PlayerName"] = playerNameFixed;
+        PlayerPrefs.SetString("PlayerName", playerNameFixed);
+        PlayerPrefs.Save();
 
         textMessage.text = "Adding user info..";
         tryMatching = true;
@@ -83,7 +87,7 @@ public class MultiplayerMatching : MonoBehaviour
     {
         var json = JsonUtility.ToJson(new Player
         {
-            gameUserId = gameUserId.ToString("D"),
+            gameUserId = gameUserId,
             name = playerNameFixed,
         });
 
