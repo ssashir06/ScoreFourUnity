@@ -1049,6 +1049,7 @@ MonoBehaviour:
   textGuide: {fileID: 198338467}
   textPlayer1Name: {fileID: 736867703}
   textPlayer2Name: {fileID: 2042570165}
+  buttonLeaveButton: {fileID: 2128299361}
   gameRoom:
     gameRoomId: ad3c1981-c7a3-4a48-8b55-d721faf77eea
     name: Game room Sunday, April 5, 2020 11:04:24 AM
@@ -1503,8 +1504,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2003616369}
-        m_MethodName: GoBackToMenu
+      - m_Target: {fileID: 2003616368}
+        m_MethodName: LeaveAndGoToMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
