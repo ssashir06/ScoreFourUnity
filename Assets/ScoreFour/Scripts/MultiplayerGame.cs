@@ -1,9 +1,11 @@
 ﻿using Assets.ScoreFour.Scripts;
+using Assets.ScoreFour.Scripts.Enums;
 using Assets.ScoreFour.Scripts.JsonEntity;
 using Assets.ScoreFour.Scripts.SceneManagement;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UniRx;
 using UniRx.Async;
@@ -17,6 +19,7 @@ public class MultiplayerGame : MonoBehaviour
     public UnityEngine.UI.Text textGuide;
     public UnityEngine.UI.Text textPlayer1Name;
     public UnityEngine.UI.Text textPlayer2Name;
+    public UnityEngine.UI.Button buttonLeaveButton;
     public GameRoom gameRoom;
     private Guid gameUserId;
     public SceneTransfrer sceneTransfer;
@@ -25,7 +28,7 @@ public class MultiplayerGame : MonoBehaviour
 
     private int counter;
     private int playerNumber;
-    private bool ended;
+    private bool isEnded;
 
     private bool IsMyturn => counter % 2 == this.playerNumber - 1;
     private bool Pooling => !IsMyturn;
@@ -37,8 +40,9 @@ public class MultiplayerGame : MonoBehaviour
         this.textGuide.text = "Game started";
 
         this.gameRoom = (GameRoom)GameContext.Instance.Context["GameRoom"];
-        this.gameUserId = (Guid)GameContext.Instance.Context["GameUserId"];
-        this.ended = false;
+        this.gameUserId = Guid.Parse((string)GameContext.Instance.Context["GameUserId"]);
+        this.buttonLeaveButton.enabled = true;
+        this.isEnded = false;
         this.counter = 0;
         this.playerNumber = Guid.Parse(this.gameRoom.players[0].gameUserId) == this.gameUserId ? 1
             : Guid.Parse(this.gameRoom.players[1].gameUserId) == this.gameUserId ? 2
@@ -68,20 +72,7 @@ public class MultiplayerGame : MonoBehaviour
         });
         this.gameRule.OnGameOverAsObservable
             .RepeatUntilDestroy(this)
-            .Subscribe(playerNumber =>
-        {
-            if (playerNumber == this.playerNumber)
-            {
-                this.textGuide.text = "You win.";
-                this.ended = true;
-            }
-            else
-            {
-                this.textGuide.text = "You lose.";
-                this.ended = true;
-            }
-
-        });
+            .Subscribe(async (winnerPlayerNumber) => await GameOverAsync(winnerPlayerNumber));
         StartCoroutine(MovementUpdateLoopAsync().ToCoroutine());
     }
 
@@ -94,7 +85,7 @@ public class MultiplayerGame : MonoBehaviour
             return;
         }
 
-        if (gameRule.GameOver || ended)
+        if (gameRule.GameOver || isEnded)
         {
             this.deploymentOrganizer.SetActive(false);
         }
@@ -113,11 +104,118 @@ public class MultiplayerGame : MonoBehaviour
         }
     }
 
-    async UniTask MovementUpdateLoopAsync()
+    public void LeaveAndGoToMenu()
+    {
+        StartCoroutine(UniTask.ToCoroutine(LeaveAndGoToMenuAsync));
+    }
+
+    private async UniTask LeaveAndGoToMenuAsync()
+    {
+        if (!isEnded)
+        {
+            this.buttonLeaveButton.enabled = false;
+
+            Exception lastException = null;
+            for (var i = 0; i < Settings.NetworkRetry; i++)
+            {
+                try
+                {
+                    var json = JsonUtility.ToJson(new
+                    {
+                        playerNumber,
+                    });
+                    var request = UnityWebRequest.Put(new Uri(
+                        new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Leave"
+                        ), json);
+                    request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                    var output = await request.SendWebRequest();
+                    if (output.isHttpError)
+                    {
+                        Debug.Log("A http error is occured");
+                        throw new Exception("A http error is occured");
+                    }
+                    else if (output.isNetworkError)
+                    {
+                        Debug.Log("A network error is occured");
+                        throw new Exception("A network error is occured");
+                    }
+
+                    sceneTransfer.GoBackToMenu();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                }
+                await UniTask.Delay(TimeSpan.FromSeconds(1));
+            }
+            this.enabled = true;
+            this.textGuide.text = $"Error: ({lastException?.Message ?? "Unknown"})";
+            this.buttonLeaveButton.enabled = true;
+            throw lastException;
+        }
+        else
+        {
+            sceneTransfer.GoBackToMenu();
+        }
+
+    }
+
+    private async UniTask GameOverAsync(int winnerPlayerNumber)
+    {
+        if (winnerPlayerNumber == this.playerNumber)
+        {
+            this.textGuide.text = "You win.";
+            this.isEnded = true;
+        }
+        else
+        {
+            this.textGuide.text = "You lose.";
+            this.isEnded = true;
+        }
+
+        Exception lastException = null;
+        for (var i = 0; i < Settings.NetworkRetry; i++)
+        {
+            try
+            {
+                var json = JsonUtility.ToJson(new
+                {
+                    playerNumber = winnerPlayerNumber,
+                });
+                var request = UnityWebRequest.Put(new Uri(
+                    new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Winner"
+                    ), json);
+                request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                var output = await request.SendWebRequest();
+                if (output.isHttpError)
+                {
+                    Debug.Log("A http error is occured");
+                    throw new Exception("A http error is occured");
+                }
+                else if (output.isNetworkError)
+                {
+                    Debug.Log("A network error is occured");
+                    throw new Exception("A network error is occured");
+                }
+                return;
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+            }
+            await UniTask.Delay(TimeSpan.FromSeconds(1));
+        }
+        this.enabled = true;
+        this.textGuide.text = $"Error: ({lastException?.Message ?? "Unknown"})";
+        throw lastException;
+    }
+
+    private async UniTask MovementUpdateLoopAsync()
     {
         while (true)
         {
-            if (gameRule.GameOver || ended)
+            if (gameRule.GameOver || isEnded)
             {
                 break;
             }
@@ -133,11 +231,11 @@ public class MultiplayerGame : MonoBehaviour
         if (await this.IsGameEndedAsync())
         {
             this.textGuide.text = $"Game is ended.";
-            this.ended = true;
+            this.isEnded = true;
             return;
         }
 
-        if (this.Pooling && !this.ended)
+        if (this.Pooling && !this.isEnded)
         {
             var movement = await this.GetMovementAsync(this.counter);
             if (movement != null)
@@ -148,7 +246,7 @@ public class MultiplayerGame : MonoBehaviour
                 if (!success)
                 {
                     this.textGuide.text = "An error is occured";
-                    this.ended = true;
+                    this.isEnded = true;
                     this.gameRule.CanDeploy = false;
                     return;
                 }
@@ -208,7 +306,7 @@ public class MultiplayerGame : MonoBehaviour
             {
                 var output = await UnityWebRequest.Get(new Uri(
                     new Uri(Settings.ServerUrl),
-                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/IsEnded"
+                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/Status"
                     )).SendWebRequest();
 
                 if (output.isHttpError)
@@ -227,8 +325,12 @@ public class MultiplayerGame : MonoBehaviour
                     case 200:
                         {
                             var json = output.downloadHandler.text;
-                            var ended = bool.Parse(json);
-                            return ended;
+                            var status = (GameRoomStatus)int.Parse(json);
+                            return new[]{
+                                GameRoomStatus.GameOver,
+                                GameRoomStatus.Left,
+                                GameRoomStatus.TimedOut,
+                            }.Contains(status);
                         }
                 }
             }
