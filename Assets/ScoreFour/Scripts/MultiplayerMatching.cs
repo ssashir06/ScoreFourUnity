@@ -10,15 +10,19 @@ using UniRx.Async;
 using UnityEngine;
 using UnityEngine.Networking;
 
+[ExecuteInEditMode]
 public class MultiplayerMatching : MonoBehaviour
 {
     public SceneTransfrer sceneTransfrer;
     public UnityEngine.UI.InputField inputFieldUserName;
     public UnityEngine.UI.Button buttonStart;
+    public UnityEngine.UI.Button buttonCancel;
     public UnityEngine.UI.Text textMessage;
-    private bool tryMatching = false;
+    private volatile bool tryMatching = false;
     private string playerNameFixed;
     private string gameUserId;
+
+    public bool TryMatching { get => tryMatching; set => tryMatching = value; }
 
     // Start is called before the first frame update
     void Start()
@@ -30,7 +34,7 @@ public class MultiplayerMatching : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (tryMatching)
+        if (TryMatching)
         {
             inputFieldUserName.gameObject.SetActive(false);
             buttonStart.gameObject.SetActive(false);
@@ -44,7 +48,7 @@ public class MultiplayerMatching : MonoBehaviour
 
     public async void StartConnection()
     {
-        if (tryMatching || string.IsNullOrWhiteSpace(inputFieldUserName.text))
+        if (TryMatching || string.IsNullOrWhiteSpace(inputFieldUserName.text))
         {
             return;
         }
@@ -54,19 +58,22 @@ public class MultiplayerMatching : MonoBehaviour
         PlayerPrefs.SetString("PlayerName", playerNameFixed);
         PlayerPrefs.Save();
 
-        textMessage.text = "Adding user info..";
-        tryMatching = true;
-        await RegisterAsync();
-        textMessage.text = "Finding game room ...";
-        while (tryMatching)
+        var lastUserRegister = DateTime.Now - TimeSpan.FromMinutes(100);
+        TryMatching = true;
+        while (TryMatching)
         {
+            if (DateTime.Now - lastUserRegister > TimeSpan.FromSeconds(5))
+            {
+                await RegisterAsync();
+                lastUserRegister = DateTime.Now;
+            }
             if (await TryMatchAsync())
             {
                 break;
             }
             await UniTask.Delay(TimeSpan.FromSeconds(1));
         }
-        if (tryMatching)
+        if (TryMatching)
         {
             this.sceneTransfrer.StartMultiplayerGame();
         }
@@ -79,8 +86,18 @@ public class MultiplayerMatching : MonoBehaviour
 
     public void CancelConnection()
     {
-        tryMatching = false;
-        textMessage.text = "";
+        this.buttonCancel.enabled = false;
+        this.buttonStart.enabled = false;
+        if (TryMatching)
+        {
+            TryMatching = false;
+            textMessage.text = "";
+        }
+        else
+        {
+            this.sceneTransfrer.GoBackToMenu();
+            textMessage.text = "";
+        }
     }
 
     private async UniTask RegisterAsync()
@@ -92,7 +109,7 @@ public class MultiplayerMatching : MonoBehaviour
         });
 
         Exception lastException = null;
-        for (int i=0;i<Settings.NetworkRetry; i++)
+        for (int i = 0; i < Settings.NetworkRetry; i++)
         {
             try
             {
