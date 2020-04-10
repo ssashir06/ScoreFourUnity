@@ -88,15 +88,14 @@ public class MultiplayerMatching : MonoBehaviour
     {
         this.buttonCancel.enabled = false;
         this.buttonStart.enabled = false;
+        this.textMessage.text = "Player matching cancelled";
         if (TryMatching)
         {
             TryMatching = false;
-            textMessage.text = "";
         }
         else
         {
             this.sceneTransfrer.GoBackToMenu();
-            textMessage.text = "";
         }
     }
 
@@ -113,6 +112,7 @@ public class MultiplayerMatching : MonoBehaviour
         {
             try
             {
+                textMessage.text = "Finding game room..";
                 var request = UnityWebRequest.Put(new Uri(
                     new Uri(Settings.ServerUrl),
                     $"/api/v1/PlayerMatching/GamePlayer"),
@@ -146,6 +146,7 @@ public class MultiplayerMatching : MonoBehaviour
     private async UniTask<bool> TryMatchAsync()
     {
 
+        textMessage.text = "Finding game room..";
         var output = await UnityWebRequest.Get(new Uri(
             new Uri(Settings.ServerUrl),
             $"/api/v1/PlayerMatching/GamePlayer/{gameUserId}"))
@@ -168,7 +169,6 @@ public class MultiplayerMatching : MonoBehaviour
                 return false;
             case 202:
                 // No user found.
-                textMessage.text = "Finding game room..";
                 return false;
             case 200:
                 {
