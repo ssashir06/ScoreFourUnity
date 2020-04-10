@@ -9,10 +9,6 @@ using UnityEngine;
 using UniRx;
 using UniRx.Triggers;
 
-public class AfterMovedTrigger
-{
-}
-
 [ExecuteInEditMode]
 public class GameRule :  ObservableTriggerBase
 {
@@ -55,7 +51,7 @@ public class GameRule :  ObservableTriggerBase
     {
         if (textGuide != null)
         {
-            textGuide.text = $"Player {turnedPlayer} {guide}";
+            textGuide.text = $"Player {turnedPlayer}: {guide}";
         }
     }
 
@@ -65,6 +61,7 @@ public class GameRule :  ObservableTriggerBase
         counter = 0;
         turnedPlayer = 1;
         gameOver = false;
+        CanDeploy = true;
         matrix = new int[4, 4, 4];
     }
 
@@ -104,7 +101,7 @@ public class GameRule :  ObservableTriggerBase
 
         if (winner != null)
         {
-            guide = "Game.";
+            guide = "Win";
             gameOver = true;
 
             this.RaiseOnMove(turnedPlayer, movement);

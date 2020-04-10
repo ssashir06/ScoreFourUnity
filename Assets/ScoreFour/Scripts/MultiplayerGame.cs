@@ -54,22 +54,22 @@ public class MultiplayerGame : MonoBehaviour
         this.gameRule.OnMoveAsObservable
             .RepeatUntilDestroy(this)
             .Subscribe(async tuple =>
-        {
-            var playerNumber = tuple.Item1;
-            var movement = tuple.Item2;
-            if (playerNumber == this.playerNumber)
             {
-                if (IsMyturn)
+                var playerNumber = tuple.Item1;
+                var movement = tuple.Item2;
+                if (playerNumber == this.playerNumber)
                 {
-                    movement.playerNumber = this.playerNumber;
-                    await this.ReportMovementAsync(movement);
+                    if (IsMyturn)
+                    {
+                        movement.playerNumber = this.playerNumber;
+                        await this.ReportMovementAsync(movement);
+                    }
                 }
-            }
-            else
-            {
-                counter++;
-            }
-        });
+                else
+                {
+                    counter++;
+                }
+            });
         this.gameRule.OnGameOverAsObservable
             .RepeatUntilDestroy(this)
             .Subscribe(async (winnerPlayerNumber) => await GameOverAsync(winnerPlayerNumber));
