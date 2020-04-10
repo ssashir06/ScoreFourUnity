@@ -9,8 +9,6 @@ public class Initialize : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 15;
-
         GameContext.Instance.Context["GameUserId"] = ReadOrConfigureUserInfo(
             "GameUserId", Guid.NewGuid().ToString("D"));
         GameContext.Instance.Context["PlayerName"] = ReadOrConfigureUserInfo(
