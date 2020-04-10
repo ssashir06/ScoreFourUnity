@@ -16,15 +16,16 @@ using UnityEngine.SceneManagement;
 [ExecuteInEditMode]
 public class MultiplayerGame : MonoBehaviour
 {
+    public GameRoom gameRoom;
+    public TextNotification textNotification;
+    public SceneTransfrer sceneTransfer;
+    public GameRule gameRule;
+    public DeploymentOrganizer deploymentOrganizer;
     public UnityEngine.UI.Text textGuide;
     public UnityEngine.UI.Text textPlayer1Name;
     public UnityEngine.UI.Text textPlayer2Name;
     public UnityEngine.UI.Button buttonLeaveButton;
-    public GameRoom gameRoom;
     private Guid gameUserId;
-    public SceneTransfrer sceneTransfer;
-    public GameRule gameRule;
-    public DeploymentOrganizer deploymentOrganizer;
 
     private int counter;
     private int playerNumber;
@@ -166,11 +167,17 @@ public class MultiplayerGame : MonoBehaviour
         if (winnerPlayerNumber == this.playerNumber)
         {
             this.textGuide.text = "You win.";
+            this.textNotification.ShowMessage(
+                TimeSpan.FromSeconds(5),
+                "You win");
             this.isEnded = true;
         }
         else
         {
             this.textGuide.text = "You lose.";
+            this.textNotification.ShowMessage(
+                TimeSpan.FromSeconds(5),
+                "You lose");
             this.isEnded = true;
         }
 

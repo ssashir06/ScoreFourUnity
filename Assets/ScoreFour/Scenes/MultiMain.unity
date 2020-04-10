@@ -422,6 +422,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1dc4e29610a3a954cb613bd0471c1f3c, type: 3}
+--- !u!114 &646605195 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7125439671711551512, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
+    type: 3}
+  m_PrefabInstance: {fileID: 646605194}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc12dde945f8fd4ab9988c0c4a84659, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!20 &768783378 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 1498698944575951337, guid: 37da52f2ce2d63748964cac7f3e1bc7a,
@@ -680,10 +692,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22b0277e4b507944d92fcf8d467fbc8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  textGuide: {fileID: 2009173151}
-  textPlayer1Name: {fileID: 1370737337}
-  textPlayer2Name: {fileID: 294767536}
-  buttonLeaveButton: {fileID: 1778831829}
   gameRoom:
     gameRoomId: ed0a8db3-50f0-486b-b3b6-a6dca2b4049f
     name: Game room Thursday, April 9, 2020 2:33:16 PM
@@ -693,9 +701,14 @@ MonoBehaviour:
     - gameUserId: 9c8296be-3d8d-4a3e-919c-adf45a0d8f6f
       name: Unity user
     createDate: 2020-04-09T23:33:16.6092631+09:00
+  textNotification: {fileID: 646605195}
   sceneTransfer: {fileID: 2003616369}
   gameRule: {fileID: 1985415148}
   deploymentOrganizer: {fileID: 1324679514}
+  textGuide: {fileID: 2009173151}
+  textPlayer1Name: {fileID: 1370737337}
+  textPlayer2Name: {fileID: 294767536}
+  buttonLeaveButton: {fileID: 1778831829}
 --- !u!114 &2003616369
 MonoBehaviour:
   m_ObjectHideFlags: 0
