@@ -420,6 +420,17 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8032679339830845669, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 8032679339830845669, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
+        type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1dc4e29610a3a954cb613bd0471c1f3c, type: 3}
 --- !u!114 &646605195 stripped
@@ -693,14 +704,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameRoom:
-    gameRoomId: ed0a8db3-50f0-486b-b3b6-a6dca2b4049f
-    name: Game room Thursday, April 9, 2020 2:33:16 PM
+    gameRoomId: bbdadedb-c003-4bd0-95d7-bde843c83d64
+    name: Game room Sunday, April 12, 2020 11:17:45 AM
     players:
-    - gameUserId: 9a3b2d57-a9ff-4f15-9d93-2f98991306b5
-      name: Player 2680637184
+    - gameUserId: e9fcfea2-84a2-4b25-a501-c5769707abc5
+      name: Player 2777655040
     - gameUserId: 9c8296be-3d8d-4a3e-919c-adf45a0d8f6f
       name: Unity user
-    createDate: 2020-04-09T23:33:16.6092631+09:00
+    createDate: 2020-04-12T11:17:45.945551+00:00
   textNotification: {fileID: 646605195}
   sceneTransfer: {fileID: 2003616369}
   gameRule: {fileID: 1985415148}
