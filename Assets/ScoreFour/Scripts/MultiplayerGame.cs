@@ -171,6 +171,8 @@ public class MultiplayerGame : MonoBehaviour
                 TimeSpan.FromSeconds(5),
                 "You win");
             this.isEnded = true;
+
+            await ReportWinner(winnerPlayerNumber);
         }
         else
         {
@@ -180,7 +182,10 @@ public class MultiplayerGame : MonoBehaviour
                 "You lose");
             this.isEnded = true;
         }
+    }
 
+    private async UniTask ReportWinner(int winnerPlayerNumber)
+    {
         Exception lastException = null;
         for (var i = 0; i < Settings.NetworkRetry; i++)
         {
@@ -235,13 +240,6 @@ public class MultiplayerGame : MonoBehaviour
     private async UniTask UpdateGameAsync()
     {
 
-        if (await this.IsGameEndedAsync())
-        {
-            this.textGuide.text = $"Game is ended.";
-            this.isEnded = true;
-            return;
-        }
-
         if (this.Pooling && !this.isEnded)
         {
             var movement = await this.GetMovementAsync(this.counter);
@@ -258,6 +256,13 @@ public class MultiplayerGame : MonoBehaviour
                     return;
                 }
             }
+        }
+
+        if (await this.IsGameEndedAsync())
+        {
+            this.textGuide.text = $"Game is ended.";
+            this.isEnded = true;
+            return;
         }
 
         this.gameRule.CanDeploy = !this.gameRule.GameOver && !this.Pooling;
