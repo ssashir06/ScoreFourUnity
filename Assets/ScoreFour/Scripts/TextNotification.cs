@@ -6,13 +6,13 @@ using UnityEngine;
 
 public class TextNotification : MonoBehaviour
 {
-    public GameObject text;
-    public TMPro.TextMeshProUGUI textMesh;
+    public GameObject textCollection;
+    public UnityEngine.UI.Text textNormal;
 
     // Start is called before the first frame update
     void Start()
     {
-        text.SetActive(false);
+        textCollection.SetActive(false);
     }
 
     // Update is called once per frame
@@ -29,9 +29,9 @@ public class TextNotification : MonoBehaviour
 
     private async UniTask Display(TimeSpan display, string message)
     {
-        this.textMesh.text = message;
-        this.text.SetActive(true);
+        this.textNormal.text = message;
+        this.textCollection.SetActive(true);
         await UniTask.Delay(display);
-        this.text.SetActive(false);
+        this.textCollection.SetActive(false);
     }
 }
