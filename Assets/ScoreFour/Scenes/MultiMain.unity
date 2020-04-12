@@ -268,6 +268,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!20 &339818732 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 226725332741999908, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
+    type: 3}
+  m_PrefabInstance: {fileID: 646605194}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &646605194
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -294,7 +300,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Camera
       value: 
-      objectReference: {fileID: 768783378}
+      objectReference: {fileID: 339818732}
     - target: {fileID: 755048653220115039, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -445,12 +451,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cc12dde945f8fd4ab9988c0c4a84659, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!20 &768783378 stripped
-Camera:
-  m_CorrespondingSourceObject: {fileID: 1498698944575951337, guid: 37da52f2ce2d63748964cac7f3e1bc7a,
-    type: 3}
-  m_PrefabInstance: {fileID: 1967819369}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1170259230 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4377296568554442753, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
