@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerViewRotation : MonoBehaviour
 {
+    public GameObject rotationObject;
     public UnityEngine.UI.Slider rotationHorizonal;
     // Start is called before the first frame update
     void Start()
@@ -14,8 +15,8 @@ public class PlayerViewRotation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var euler = this.transform.rotation.eulerAngles;
-        this.transform.rotation = Quaternion.Euler(
+        var euler = rotationObject.transform.transform.rotation.eulerAngles;
+        rotationObject.transform.transform.rotation = Quaternion.Euler(
             euler.x,
             rotationHorizonal.value,
             euler.z
