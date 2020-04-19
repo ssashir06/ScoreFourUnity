@@ -21,6 +21,7 @@ public class MultiplayerMatching : MonoBehaviour
     private volatile bool tryMatching = false;
     private string playerNameFixed;
     private string gameUserId;
+    private string clientId;
 
     public bool TryMatching { get => tryMatching; set => tryMatching = value; }
 
@@ -28,6 +29,7 @@ public class MultiplayerMatching : MonoBehaviour
     void Start()
     {
         gameUserId = (string)GameContext.Instance.Context["GameUserId"];
+        clientId = (string)GameContext.Instance.Context["ClientId"];
         inputFieldUserName.text = (string)GameContext.Instance.Context["PlayerName"];
     }
 
@@ -104,8 +106,9 @@ public class MultiplayerMatching : MonoBehaviour
         var json = JsonUtility.ToJson(new Player
         {
             gameUserId = gameUserId,
+            clientId = clientId,
             name = playerNameFixed,
-        });
+        });;
 
         Exception lastException = null;
         for (int i = 0; i < Settings.NetworkRetry; i++)
@@ -149,7 +152,7 @@ public class MultiplayerMatching : MonoBehaviour
         textMessage.text = "Finding game room..";
         var output = await UnityWebRequest.Get(new Uri(
             new Uri(Settings.ServerUrl),
-            $"/api/v1/PlayerMatching/GamePlayer/{gameUserId}"))
+            $"/api/v1/PlayerMatching/GamePlayer/{clientId}"))
             .SendWebRequest();
 
         if (output.isHttpError)
@@ -173,9 +176,9 @@ public class MultiplayerMatching : MonoBehaviour
             case 200:
                 {
                     var json = output.downloadHandler.text;
-                    var gameRoom = JsonUtility.FromJson<GameRoom>(json);
-                    GameContext.Instance.Context["GameUserId"] = gameUserId;
-                    GameContext.Instance.Context["GameRoom"] = gameRoom;
+                    var gameStart = JsonUtility.FromJson<GameStart>(json);
+                    GameContext.Instance.Context["GameRoom"] = gameStart.gameRoom;
+                    GameContext.Instance.Context["Token"] = gameStart.token;
                     return true;
                 }
         }

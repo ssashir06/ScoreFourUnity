@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 namespace Assets.ScoreFour.Scripts.JsonEntity
 {
     [Serializable]
-    public class Player
+    public class GameStart
     {
-        public string gameUserId;
-        public string clientId;
-        public string name;
+        public GameRoom gameRoom;
+        public string token;
     }
 }

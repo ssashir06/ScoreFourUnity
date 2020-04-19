@@ -11,7 +11,7 @@ namespace Assets.ScoreFour.Scripts.JsonEntity
     {
         public string gameRoomId;
         public string name;
-        public Player[] players;
+        public PlayerLight[] players;
         public string createDate;
     }
 }
