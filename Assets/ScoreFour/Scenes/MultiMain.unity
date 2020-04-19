@@ -538,7 +538,7 @@ PrefabInstance:
       objectReference: {fileID: 1324679512}
     - target: {fileID: 1744421504, guid: d79ff4d49fffd90499dd65959902b6a5, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4814253860470726225, guid: d79ff4d49fffd90499dd65959902b6a5,
         type: 3}
@@ -716,6 +716,7 @@ GameObject:
   - component: {fileID: 2003616369}
   - component: {fileID: 2003616368}
   - component: {fileID: 2003616370}
+  - component: {fileID: 2003616372}
   m_Layer: 0
   m_Name: GameMaster
   m_TagString: Untagged
@@ -736,15 +737,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameRoom:
-    gameRoomId: bbdadedb-c003-4bd0-95d7-bde843c83d64
-    name: Game room Sunday, April 12, 2020 11:17:45 AM
+    gameRoomId: 0364dfcf-2cf7-40ed-8e2f-8d7a5d41b9e7
+    name: Game room Sunday, April 19, 2020 11:48:07 AM
     players:
-    - gameUserId: e9fcfea2-84a2-4b25-a501-c5769707abc5
-      name: Player 2777655040
     - gameUserId: 9c8296be-3d8d-4a3e-919c-adf45a0d8f6f
       name: Unity user
-    createDate: 2020-04-12T11:17:45.945551+00:00
-  token: 
+    - gameUserId: e9fcfea2-84a2-4b25-a501-c5769707abc5
+      name: Win x86_64
+    createDate: 
+  token: W7t1+CdP50uwP+o0icdBtQ==
   textNotification: {fileID: 646605195}
   sceneTransfer: {fileID: 2003616369}
   gameRule: {fileID: 1985415148}
@@ -791,6 +792,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2003616372
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2003616367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3cd207057515c4438a31a6a7b548fe7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &2009173151 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2982812375568579876, guid: 1dc4e29610a3a954cb613bd0471c1f3c,

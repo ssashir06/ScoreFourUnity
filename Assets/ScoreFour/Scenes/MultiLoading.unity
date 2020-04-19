@@ -596,6 +596,7 @@ GameObject:
   - component: {fileID: 649829636}
   - component: {fileID: 649829637}
   - component: {fileID: 649829638}
+  - component: {fileID: 649829639}
   m_Layer: 0
   m_Name: Multiplayer Matching
   m_TagString: Untagged
@@ -644,6 +645,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acd28b91d65b6a649a241d9a2a5be7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &649829639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 649829635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3cd207057515c4438a31a6a7b548fe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &960109600
