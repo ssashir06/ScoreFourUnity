@@ -17,6 +17,7 @@ using UnityEngine.SceneManagement;
 public class MultiplayerGame : MonoBehaviour
 {
     public GameRoom gameRoom;
+    public string token;
     public TextNotification textNotification;
     public SceneTransfrer sceneTransfer;
     public GameRule gameRule;
@@ -42,6 +43,7 @@ public class MultiplayerGame : MonoBehaviour
 
         this.gameRoom = (GameRoom)GameContext.Instance.Context["GameRoom"];
         this.gameUserId = Guid.Parse((string)GameContext.Instance.Context["GameUserId"]);
+        this.token = (string)GameContext.Instance.Context["Token"];
         this.buttonLeaveButton.enabled = true;
         this.isEnded = false;
         this.counter = 0;
@@ -121,14 +123,12 @@ public class MultiplayerGame : MonoBehaviour
             {
                 try
                 {
-                    var json = JsonUtility.ToJson(new
-                    {
-                        playerNumber,
-                    });
-                    var request = UnityWebRequest.Put(new Uri(
-                        new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Leave"
-                        ), json);
+                    var request = UnityWebRequest.Get(new Uri(
+                        new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Leave/{gameUserId}"
+                        ));
+                    request.method = "PUT";
                     request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                    request.SetRequestHeader("Authorization", $"Bearer {token}");
                     var output = await request.SendWebRequest();
                     if (output.isHttpError)
                     {
@@ -191,14 +191,12 @@ public class MultiplayerGame : MonoBehaviour
         {
             try
             {
-                var json = JsonUtility.ToJson(new
-                {
-                    playerNumber = winnerPlayerNumber,
-                });
-                var request = UnityWebRequest.Put(new Uri(
-                    new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Winner"
-                    ), json);
+                var request = UnityWebRequest.Get(new Uri(
+                    new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Winner/{gameUserId}"
+                    ));
+                request.method = "PUT";
                 request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                request.SetRequestHeader("Authorization", $"Bearer {token}");
                 var output = await request.SendWebRequest();
                 if (output.isHttpError)
                 {
@@ -284,6 +282,7 @@ public class MultiplayerGame : MonoBehaviour
                     new Uri(Settings.ServerUrl), $"/api/v1/GameManager/{gameRoom.gameRoomId}/Movement"
                     ), json);
                 request.SetRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                request.SetRequestHeader("Authorization", $"Bearer {token}");
                 var output = await request.SendWebRequest();
                 if (output.isHttpError)
                 {
@@ -316,10 +315,12 @@ public class MultiplayerGame : MonoBehaviour
         {
             try
             {
-                var output = await UnityWebRequest.Get(new Uri(
+                var request = UnityWebRequest.Get(new Uri(
                     new Uri(Settings.ServerUrl),
                     $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/Status"
-                    )).SendWebRequest();
+                    ));
+                request.SetRequestHeader("Authorization", $"Bearer {token}");
+                var output = await request.SendWebRequest();
 
                 if (output.isHttpError)
                 {
@@ -365,10 +366,11 @@ public class MultiplayerGame : MonoBehaviour
         {
             try
             {
-                var output = await UnityWebRequest.Get(new Uri(
+                var request = UnityWebRequest.Get(new Uri(
                     new Uri(Settings.ServerUrl),
-                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/Movement/{counter}"))
-                    .SendWebRequest();
+                    $"/api/v1/GameManager/{this.gameRoom.gameRoomId}/Movement/{counter}"));
+                request.SetRequestHeader("Authorization", $"Bearer {token}");
+                var output = await request.SendWebRequest();
 
                 if (output.isNetworkError)
                 {

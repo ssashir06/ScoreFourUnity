@@ -11,6 +11,7 @@ public class Initialize : MonoBehaviour
     {
         GameContext.Instance.Context["GameUserId"] = ReadOrConfigureUserInfo(
             "GameUserId", Guid.NewGuid().ToString("D"));
+        GameContext.Instance.Context["ClientId"] = Guid.NewGuid().ToString("D");
         GameContext.Instance.Context["PlayerName"] = ReadOrConfigureUserInfo(
             "PlayerName", $"Player {(UInt32)(UnityEngine.Random.value * UInt32.MaxValue)}");
         PlayerPrefs.Save();

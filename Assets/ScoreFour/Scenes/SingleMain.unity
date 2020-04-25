@@ -96,7 +96,6 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
-    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -292,6 +291,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_RootOrder
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 1544066650619256988, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2664974567591216333, guid: 1dc4e29610a3a954cb613bd0471c1f3c,
         type: 3}
@@ -594,6 +598,7 @@ GameObject:
   - component: {fileID: 1456130579}
   - component: {fileID: 1456130581}
   - component: {fileID: 1456130582}
+  - component: {fileID: 1456130583}
   m_Layer: 0
   m_Name: Game Master
   m_TagString: Untagged
@@ -651,6 +656,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: acd28b91d65b6a649a241d9a2a5be7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1456130583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456130578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3cd207057515c4438a31a6a7b548fe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1848682525 stripped
@@ -824,6 +841,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1498698944575951336, guid: 37da52f2ce2d63748964cac7f3e1bc7a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1498698944877913188, guid: 37da52f2ce2d63748964cac7f3e1bc7a,
         type: 3}
       propertyPath: m_Name
